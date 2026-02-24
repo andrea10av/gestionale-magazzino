@@ -91,16 +91,17 @@
   </form>
 
   {% if immagini and immagini|length > 0 %}
-<div style="display:flex;flex-wrap:wrap;gap:10px;">
-  {% for im in immagini %}
-    <a href="{{ url_for('serve_img', filename=im.filename) }}" target="_blank" style="display:inline-block;">
-      <img
-        src="{{ url_for('serve_img', filename=im.filename) }}"
-        style="height:90px;border-radius:8px;border:1px solid var(--border);"
-      >
-    </a>
-  {% endfor %}
-</div>
+    <div style="height:12px;"></div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;">
+      {% for im in immagini %}
+        <a href="{{ url_for('serve_img', filename=im.filename) }}" target="_blank" style="display:inline-block;">
+          <img
+            src="{{ url_for('serve_img', filename=im.filename) }}"
+            style="height:90px;border-radius:8px;border:1px solid var(--border);"
+          >
+        </a>
+      {% endfor %}
+    </div>
   {% else %}
     <div class="muted" style="margin-top:10px;">Nessuna immagine caricata.</div>
   {% endif %}
@@ -127,36 +128,42 @@
     <button class="btn" type="submit">Aggiungi colore</button>
   </form>
 
-{% if colore %}
-  <div style="height:14px;"></div>
-  <div class="muted">Colore selezionato: <b>{{ colore }}</b></div>
-  <div style="height:10px;"></div>
+  {% if colore %}
+    <div style="height:14px;"></div>
+    <div class="muted">Colore selezionato: <b>{{ colore }}</b></div>
+    <div style="height:10px;"></div>
 
-  <form method="post" action="{{ url_for('stock_save', codice=p.codice) }}">
-    <input type="hidden" name="colore" value="{{ colore }}">
+    <form method="post" action="{{ url_for('stock_save', codice=p.codice) }}">
+      <input type="hidden" name="colore" value="{{ colore }}">
 
-    <table class="table">
-      <tr>
-        <th>Taglia</th>
-        <th style="width:200px;">Quantità</th>
-      </tr>
-
-      {% for t in taglie %}
+      <table class="table">
         <tr>
-          <td><b>{{ t.taglia }}</b></td>
-          <td>
-            <input name="qty_{{ t.taglia }}" value="{{ t.quantita }}" style="width:160px;">
-          </td>
+          <th>Taglia</th>
+          <th style="width:200px;">Quantità</th>
         </tr>
-      {% endfor %}
-    </table>
 
-    <div style="height:12px;"></div>
-    <button class="btn btn-primary" type="submit">Salva rimanenze</button>
-  </form>
+        {% for t in taglie %}
+          <tr>
+            <td><b>{{ t.taglia }}</b></td>
+            <td>
+              <input name="qty_{{ t.taglia }}" value="{{ t.quantita }}" style="width:160px;">
+            </td>
+          </tr>
+        {% endfor %}
+      </table>
 
-{% else %}
-  <div class="muted" style="margin-top:12px;">
-    Seleziona un colore per visualizzare e modificare le taglie.
-  </div>
+      <div style="height:12px;"></div>
+      <button class="btn btn-primary" type="submit">Salva rimanenze</button>
+    </form>
+
+  {% else %}
+    <div class="muted" style="margin-top:12px;">
+      Seleziona un colore per visualizzare e modificare le taglie.
+    </div>
+  {% endif %}
+
+</div>
+
 {% endif %}
+
+{% endblock %}
