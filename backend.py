@@ -71,7 +71,6 @@ def _taglie_for_tipo(tipo_taglie: str):
 # ------------------------
 
 def init_database():
-    import os
     os.makedirs("DATI", exist_ok=True)
     conn = _conn()
     cur = conn.cursor()
@@ -999,5 +998,35 @@ def crea_utente(username: str, password_hash: str):
         (username, password_hash)
     )
     conn.commit()
+    conn.close()
 
+def set_stock_colore(codice_prodotto: str, colore: str, mappa_taglie_quantita: dict):
+    colore = (colore or "").strip() or "DEFAULT"
+    conn = _conn()
+    cur = conn.cursor()
+
+    for taglia, qta in mappa_taglie_quantita.items():
+        taglia = (taglia or "").strip()
+        if not taglia:
+            continue
+        try:
+            q = int(qta)
+        except Exception:
+            q = 0
+        if q < 0:
+            q = 0
+
+        cur.execute("""
+            UPDATE taglie_prodotti
+            SET quantita=?
+            WHERE codice_prodotto=? AND colore=? AND taglia=?
+        """, (q, codice_prodotto, colore, taglia))
+
+        if cur.rowcount == 0:
+            cur.execute("""
+                INSERT INTO taglie_prodotti(codice_prodotto, colore, taglia, quantita)
+                VALUES (?,?,?,?)
+            """, (codice_prodotto, colore, taglia, q))
+
+    conn.commit()
     conn.close()
