@@ -9,7 +9,15 @@
   <div class="card" style="margin-bottom:12px;">
     <form method="get" class="row">
       <input name="q" placeholder="Cerca per codice o nome..." value="{{ q }}">
-      <button class="btn btn-primary" type="submit">Cerca</button>
+
+      <select name="cat" style="max-width:260px;">
+        <option value="">Tutte le categorie</option>
+        {% for c in categorie %}
+          <option value="{{ c }}" {% if c==cat %}selected{% endif %}>{{ c }}</option>
+        {% endfor %}
+      </select>
+
+      <button class="btn btn-primary" type="submit">Filtra</button>
       <a class="btn" href="{{ url_for('products') }}">Reset</a>
     </form>
   </div>
