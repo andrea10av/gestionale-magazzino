@@ -71,6 +71,7 @@ def _taglie_for_tipo(tipo_taglie: str):
 # ------------------------
 
 def init_database():
+    import os
     os.makedirs("DATI", exist_ok=True)
     conn = _conn()
     cur = conn.cursor()
@@ -998,4 +999,5 @@ def crea_utente(username: str, password_hash: str):
         (username, password_hash)
     )
     conn.commit()
+
     conn.close()
