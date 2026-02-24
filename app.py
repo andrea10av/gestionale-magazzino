@@ -123,8 +123,16 @@ def serve_img(filename):
 @login_required
 def products():
     q = (request.args.get("q") or "").strip()
+    cat = (request.args.get("cat") or "").strip()
+
     rows = backend.lista_prodotti_overview(q)
-    return render_template("products.html", rows=rows, q=q)
+
+    # filtro categoria lato Python (semplice e sicuro)
+    if cat:
+        rows = [r for r in rows if (r[2] or "").strip().lower() == cat.lower()]
+
+    categorie = backend.lista_categorie()
+    return render_template("products.html", rows=rows, q=q, categorie=categorie, cat=cat)
 
 
 # -------------------------
@@ -423,6 +431,32 @@ def stock_move(codice):
             backend.scarica_vendita_colore(codice, colore, taglia, qta)
             m = f"✅ Scaricati {qta} su {taglia} ({colore})"
 
+    except Exception as e:
+        m = f"❌ Errore: {e}"
+
+    return redirect(url_for("product_edit", codice=codice, colore=colore, msg=m))
+
+@app.post("/product/<path:codice>/stock/save")
+@login_required
+def stock_save(codice):
+    colore = (request.form.get("colore") or "").strip()
+    if not colore:
+        return redirect(url_for("product_edit", codice=codice, msg="❌ Seleziona un colore."))
+
+    # prende tutte le input del tipo qty_XS, qty_S, qty_38 ecc.
+    mappa = {}
+    for k, v in request.form.items():
+        if k.startswith("qty_"):
+            taglia = k.replace("qty_", "", 1)
+            mappa[taglia] = v
+
+    try:
+        prod = backend.get_prodotto(codice)
+        tipo_taglie = (prod[7] or "NUMERI").upper() if prod else "NUMERI"
+        backend.ensure_stock_colore(codice, colore, tipo_taglie)
+
+        backend.set_stock_colore(codice, colore, mappa)
+        m = "✅ Rimanenze salvate."
     except Exception as e:
         m = f"❌ Errore: {e}"
 
