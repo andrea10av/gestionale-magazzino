@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% if msg %}
+  <div class="card" style="margin-bottom:12px;">
+    {{ msg }}
+  </div>
+{% endif %}
+
+{% if error %}
+  <div class="card" style="margin-bottom:12px; color:var(--danger);">
+    {{ error }}
+  </div>
+{% endif %}
+
+<div class="topbar">
+  <h2 style="margin:0;">{{ "Nuovo prodotto" if is_new else "Modifica prodotto" }}</h2>
+</div>
+
+<div class="card">
+  <form method="post" class="row" style="flex-wrap:wrap;gap:12px;align-items:flex-start;">
+
+    <div style="flex:1;min-width:260px;">
+      <div class="muted">Codice</div>
+      <input name="codice" value="{{ p.codice }}" {% if not is_new %}readonly{% endif %} required>
+
+      <div style="height:10px"></div>
+      <div class="muted">Nome</div>
+      <input name="nome" value="{{ p.nome }}" required>
+
+      <div style="height:10px"></div>
+      <div class="muted">Categoria</div>
+      <select name="categoria">
+        <option value="">(nessuna)</option>
+        {% for c in categorie %}
+          <option value="{{ c }}" {% if c==p.categoria %}selected{% endif %}>{{ c }}</option>
+        {% endfor %}
+      </select>
+
+      <div style="height:10px"></div>
+      <div class="muted">Tipo taglie</div>
+      <select name="tipo_taglie">
+        <option value="NUMERI" {% if p.tipo_taglie=="NUMERI" %}selected{% endif %}>Numeri (38-60)</option>
+        <option value="LETTERE" {% if p.tipo_taglie=="LETTERE" %}selected{% endif %}>Lettere (XS-XL)</option>
+      </select>
+
+      <div style="height:10px"></div>
+      <div class="muted">Venduti</div>
+      <input name="venduti" value="{{ p.venduti }}">
+
+      <div style="height:10px"></div>
+      <div class="muted">Costo unitario</div>
+      <input name="costo" value="{{ p.costo }}">
+
+      <div style="height:10px"></div>
+      <div class="muted">Range prezzo</div>
+      <input name="prezzo_range" value="{{ p.prezzo_range }}">
+    </div>
+
+    <div style="flex:1;min-width:260px;">
+      <div class="muted">Materiali</div>
+      <textarea name="materiali" style="width:100%;min-height:80px;padding:10px;border:1px solid var(--border);border-radius:10px;">{{ p.materiali }}</textarea>
+
+      <div style="height:10px"></div>
+      <div class="muted">Descrizione</div>
+      <textarea name="descrizione" style="width:100%;min-height:160px;padding:10px;border:1px solid var(--border);border-radius:10px;">{{ p.descrizione }}</textarea>
+
+      <div style="height:10px"></div>
+      <div class="muted">Produzione</div>
+      <textarea name="produzione" style="width:100%;min-height:80px;padding:10px;border:1px solid var(--border);border-radius:10px;">{{ p.produzione }}</textarea>
+
+      <div style="height:12px"></div>
+      <button class="btn btn-primary" type="submit">Salva</button>
+      <a class="btn" href="{{ url_for('products') }}">Torna alla lista</a>
+    </div>
+
+  </form>
+</div>
+
+{% if not is_new %}
+
+<!-- IMMAGINI -->
+<div class="card" style="margin-top:14px;">
+  <h3 style="margin-top:0;">Immagini</h3>
+
+  <form method="post" enctype="multipart/form-data"
+        action="{{ url_for('product_image_upload', codice=p.codice) }}"
+        class="row" style="gap:10px;">
+    <input type="file" name="image" accept=".jpg,.jpeg,.png,.webp" required>
+    <button class="btn btn-primary" type="submit">Carica immagine</button>
+  </form>
+
+  {% if immagini and immagini|length > 0 %}
+    <div style="height:12px;"></div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;">
+      {% for im in immagini %}
+        <img
+          src="{{ url_for('serve_img', filename=im.filename) }}"
+          style="height:90px;border-radius:8px;border:1px solid var(--border);"
+        >
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="muted" style="margin-top:10px;">Nessuna immagine caricata.</div>
+  {% endif %}
+</div>
+
+<!-- STOCK -->
+<div class="card" style="margin-top:14px;">
+  <h3 style="margin-top:0;">Stock (colori e taglie)</h3>
+
+  <form method="get" class="row" style="gap:10px;">
+    <select name="colore">
+      <option value="">Seleziona colore...</option>
+      {% for c in colori %}
+        <option value="{{ c }}" {% if c==colore %}selected{% endif %}>{{ c }}</option>
+      {% endfor %}
+    </select>
+    <button class="btn btn-primary" type="submit">Apri</button>
+  </form>
+
+  <div style="height:12px;"></div>
+
+  <form method="post" action="{{ url_for('product_color_add', codice=p.codice) }}" class="row" style="gap:10px;">
+    <input name="nuovo_colore" placeholder="Nuovo colore..." required>
+    <button class="btn" type="submit">Aggiungi colore</button>
+  </form>
+
+  {% if colore %}
+    <div style="height:14px;"></div>
+    <div class="muted">Colore selezionato: <b>{{ colore }}</b></div>
+    <div style="height:10px;"></div>
+
+    <table class="table">
+      <tr>
+        <th>Taglia</th>
+        <th>Quantità</th>
+        <th style="width:320px;">Azione</th>
+      </tr>
+
+      {% for t in taglie %}
+        <tr>
+          <td><b>{{ t.taglia }}</b></td>
+          <td>{{ t.quantita }}</td>
+          <td>
+            <form method="post" action="{{ url_for('stock_move', codice=p.codice) }}"
+                  class="row" style="gap:8px;align-items:center;">
+              <input type="hidden" name="colore" value="{{ colore }}">
+              <input type="hidden" name="taglia" value="{{ t.taglia }}">
+              <input name="qta" value="1" style="width:80px;">
+              <button class="btn btn-primary" name="azione" value="carico" type="submit">Carico</button>
+              <button class="btn" name="azione" value="scarico" type="submit">Scarico</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+    </table>
+
+  {% else %}
+    <div class="muted" style="margin-top:12px;">
+      Seleziona un colore per visualizzare e modificare le taglie.
+    </div>
+  {% endif %}
+</div>
+
+{% endif %}
+
+{% endblock %}

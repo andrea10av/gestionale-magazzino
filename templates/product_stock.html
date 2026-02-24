@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="topbar">
+  <div>
+    <h2 style="margin:0;">{{ p.nome }} <span class="muted">({{ p.codice }})</span></h2>
+    <div class="muted">{{ p.categoria }}</div>
+  </div>
+  <a class="btn" href="{{ url_for('products') }}">← Lista</a>
+</div>
+
+{% if msg %}
+  <div class="card" style="margin-bottom:12px;">
+    {{ msg }}
+  </div>
+{% endif %}
+
+<!-- Selezione / aggiunta colore -->
+<div class="card" style="margin-bottom:12px;">
+  <form method="get" class="row">
+    <input type="hidden" name="tab" value="stock">
+    <select name="colore">
+      <option value="">Seleziona colore...</option>
+      {% for c in colori %}
+        <option value="{{ c }}" {% if c==colore %}selected{% endif %}>{{ c }}</option>
+      {% endfor %}
+    </select>
+    <button class="btn btn-primary" type="submit">Apri</button>
+  </form>
+
+  <div style="height:12px;"></div>
+
+  <form method="post" class="row" action="{{ url_for('product_color_add', codice=p.codice) }}">
+    <input name="nuovo_colore" placeholder="Nuovo colore (es. Nero)" required>
+    <button class="btn" type="submit">Aggiungi colore</button>
+  </form>
+</div>
+
+{% if colore %}
+  <!-- Tabella taglie per colore -->
+  <div class="card">
+    <div class="topbar" style="margin-bottom:8px;">
+      <h3 style="margin:0;">Stock colore: {{ colore }}</h3>
+      <div class="muted">Modifica quantità per taglia</div>
+    </div>
+
+    <table class="table">
+      <tr>
+        <th>Taglia</th>
+        <th>Quantità</th>
+        <th style="width:320px;">Azione</th>
+      </tr>
+
+      {% for t in taglie %}
+        <tr>
+          <td><b>{{ t.taglia }}</b></td>
+          <td>{{ t.quantita }}</td>
+          <td>
+            <form method="post" class="row" style="gap:8px;align-items:center;"
+                  action="{{ url_for('stock_move', codice=p.codice) }}">
+              <input type="hidden" name="colore" value="{{ colore }}">
+              <input type="hidden" name="taglia" value="{{ t.taglia }}">
+
+              <input name="qta" placeholder="Q.tà" style="min-width:120px;" value="1">
+              <button class="btn btn-primary" name="azione" value="carico" type="submit">Carico</button>
+              <button class="btn" name="azione" value="scarico" type="submit">Scarico</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+    </table>
+
+    <div class="muted" style="margin-top:10px;">
+      Suggerimento: puoi scrivere anche 5, 10, ecc.
+    </div>
+  </div>
+{% else %}
+  <div class="card">
+    Seleziona un colore per vedere e modificare le taglie.
+  </div>
+{% endif %}
+
+{% endblock %}

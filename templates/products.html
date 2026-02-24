@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="topbar">
+    <h2 style="margin:0;">Prodotti</h2>
+    <div class="muted">Risultati: {{ rows|length }}</div>
+  </div>
+
+  <div class="card" style="margin-bottom:12px;">
+    <form method="get" class="row">
+      <input name="q" placeholder="Cerca per codice o nome..." value="{{ q }}">
+      <button class="btn btn-primary" type="submit">Cerca</button>
+      <a class="btn" href="{{ url_for('products') }}">Reset</a>
+    </form>
+  </div>
+
+  <div class="card" style="margin-bottom:12px;">
+    <a class="btn btn-primary" href="{{ url_for('product_new') }}">+ Nuovo prodotto</a>
+  </div>
+
+  <div class="card">
+    <table class="table">
+      <tr>
+        <th>Codice</th><th>Nome</th><th>Categoria</th><th>Colori</th><th>Rimanenza</th>
+      </tr>
+
+      {% for r in rows %}
+        <tr>
+          <td><a href="{{ url_for('product_edit', codice=r[0]) }}">{{ r[0] }}</a></td>
+          <td>{{ r[1] }}</td>
+          <td>{{ r[2] }}</td>
+          <td>{{ r[3] }}</td>
+          <td>{{ r[6] }}</td>
+        </tr>
+      {% endfor %}
+    </table>
+  </div>
+{% endblock %}
