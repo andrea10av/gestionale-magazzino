@@ -192,16 +192,25 @@ def init_database():
 def lista_colori(codice_prodotto: str):
     conn = _conn()
     cur = conn.cursor()
-    cur.execute("""
-        SELECT colore
-        FROM colori_prodotti
-        WHERE codice_prodotto = ?
-        ORDER BY colore COLLATE NOCASE
-    """, (codice_prodotto,))
-    rows = [r[0] for r in cur.fetchall()]
+
+    cur.execute(
+        "SELECT colore FROM colori_prodotti WHERE codice_prodotto=? ORDER BY colore",
+        (codice_prodotto,)
+    )
+    rows = cur.fetchall()
     conn.close()
-    colori = [c for c in colori if c != "DEFAULT"]
-    return rows
+
+    # rows = [(colore1,), (colore2,), ...]
+    colori = []
+    for r in rows:
+        c = (r[0] or "").strip()
+        if not c:
+            continue
+        if c.upper() == "DEFAULT":
+            continue
+        colori.append(c)
+
+    return colori
 
 
 def aggiungi_colore(codice_prodotto: str, colore: str):
@@ -1036,5 +1045,6 @@ def set_stock_colore(codice_prodotto: str, colore: str, mappa_taglie_quantita: d
 
     conn.commit()
     conn.close()
+
 
 
