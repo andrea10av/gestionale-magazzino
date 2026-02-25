@@ -200,6 +200,7 @@ def lista_colori(codice_prodotto: str):
     """, (codice_prodotto,))
     rows = [r[0] for r in cur.fetchall()]
     conn.close()
+    colori = [c for c in colori if c != "DEFAULT"]
     return rows
 
 
@@ -1030,3 +1031,4 @@ def set_stock_colore(codice_prodotto: str, colore: str, mappa_taglie_quantita: d
 
     conn.commit()
     conn.close()
+
