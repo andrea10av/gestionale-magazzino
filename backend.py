@@ -285,37 +285,42 @@ def ensure_stock_colore(codice_prodotto: str, colore: str, tipo_taglie: str):
     Assicura che per (prodotto, colore) esistano tutte le righe stock per le taglie del tipo scelto.
     Non modifica quantità esistenti.
     """
-    colore = (colore or "").strip() or "DEFAULT"
+    # Normalizza colore: niente spazi, tutto maiuscolo
+    colore = (colore or "").strip().upper()
+
+    # Se non c'è colore, NON creiamo "DEFAULT"
+    if not colore:
+        return
+
     taglie = _taglie_for_tipo(tipo_taglie)
 
     conn = _conn()
     cur = conn.cursor()
 
-    # assicura che il colore esista anche nella tabella colori
+    # Assicura che il colore esista anche nella tabella colori (senza duplicati)
     cur.execute(
         "INSERT OR IGNORE INTO colori_prodotti(codice_prodotto, colore) VALUES(?,?)",
         (codice_prodotto, colore)
     )
 
+    # Assicura che esistano le righe taglie per quel colore
     for t in taglie:
         cur.execute("""
-            SELECT COUNT(*)
+            SELECT 1
             FROM taglie_prodotti
             WHERE codice_prodotto=? AND colore=? AND taglia=?
+            LIMIT 1
         """, (codice_prodotto, colore, t))
-        if int(cur.fetchone()[0] or 0) == 0:
+        if cur.fetchone() is None:
             cur.execute("""
                 INSERT INTO taglie_prodotti(codice_prodotto, colore, taglia, quantita)
                 VALUES(?,?,?,0)
             """, (codice_prodotto, colore, t))
 
-    cur.execute("""
-        UPDATE prodotti SET updated_at=datetime('now') WHERE codice=?
-    """, (codice_prodotto,))
+    cur.execute("UPDATE prodotti SET updated_at=datetime('now') WHERE codice=?", (codice_prodotto,))
 
     conn.commit()
     conn.close()
-
 def reset_stock_prodotto(codice_prodotto: str, tipo_taglie: str):
     """
     Quando cambia il tipo taglie (NUMERI/LETTERE), azzera e ricrea lo stock del prodotto.
@@ -1031,4 +1036,5 @@ def set_stock_colore(codice_prodotto: str, colore: str, mappa_taglie_quantita: d
 
     conn.commit()
     conn.close()
+
 
