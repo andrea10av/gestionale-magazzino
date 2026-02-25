@@ -23,6 +23,10 @@
 
       <a class="btn" style="display:block;margin-bottom:8px" href="{{ url_for('products') }}">Prodotti</a>
       <a class="btn" style="display:block;margin-bottom:8px" href="{{ url_for('categories') }}">Categorie</a>
+      <a class="btn" style="display:block;margin-bottom:8px"
+         href="{{ url_for('backup_download') }}">
+         Scarica backup
+      </a>
       <a class="btn" style="display:block" href="{{ url_for('logout') }}">Logout</a>
     </aside>
 
@@ -31,4 +35,5 @@
     </main>
   </div>
 </body>
+
 </html>
