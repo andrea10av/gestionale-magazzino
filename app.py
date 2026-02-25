@@ -463,5 +463,22 @@ def stock_save(codice):
     return redirect(url_for("product_edit", codice=codice, colore=colore, msg=m))
 
 
+@app.get("/backup/download")
+@login_required
+def backup_download():
+    import os
+    from flask import send_file
+    from datetime import datetime
+
+    db_path = os.path.join("DATI", "database.db")
+
+    if not os.path.exists(db_path):
+        return "Database non trovato", 404
+
+    nome = f"backup_magazzino_{datetime.now().strftime('%Y-%m-%d_%H-%M')}.db"
+    return send_file(db_path, as_attachment=True, download_name=nome)
+
+
 if __name__ == "__main__":
     app.run()
+
